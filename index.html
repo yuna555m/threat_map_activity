@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خريطة التهديدات - النشاط الختامي لليوم الأول</title>
+<!-- Google Fonts: Cairo -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy: '#1B2A4A',
+          cblue: '#2E86DE',
+          iorange: '#F39C12',
+          agreen: '#27AE60',
+          ared: '#E74C3C',
+          lightbg: '#F4F6F8'
+        },
+        fontFamily: {
+          cairo: ['Cairo', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #F4F6F8;
+    color: #1B2A4A;
+  }
+
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(27, 42, 74, 0.1);
+  }
+
+  /* Custom Drag and Drop Styles */
+  .zone {
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+  .zone.over {
+    background-color: #EBF5FF;
+    border-style: solid;
+    transform: scale(1.01);
+  }
+
+  .chip {
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .chip:active {
+    cursor: grabbing;
+  }
+
+  /* Table styling */
+  th, td {
+    vertical-align: middle;
+  }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+  <!-- Application Container -->
+  <div class="max-w-7xl mx-auto w-full space-y-6">
+
+    <!-- HEADER SECTION -->
+    <header class="bg-navy text-white rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6 border-b-4 border-cblue">
+      <div class="space-y-2 text-center md:text-right w-full md:w-auto">
+        <div class="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-cblue border border-cblue/30 mb-1">
+          <i class="fa-solid fa-shield-halved"></i> النشاط الختامي · اليوم الأول
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">خريطة التهديدات</h1>
+        <p class="text-gray-300 text-sm md:text-base max-w-2xl">
+          تطبيق مفاهيم اليوم الأول في تحليل السيناريوهات الأمنية الواقعية وربطها بأركان مثلث الحماية (CIA).
+        </p>
+
+        <!-- Team Name Input in Header -->
+        <div class="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center gap-2">
+          <label for="teamNameInput" class="text-xs font-bold text-amber-400 shrink-0 flex items-center gap-1.5">
+            <i class="fa-solid fa-users-gear"></i> اسم المجموعة / الفريق:
+          </label>
+          <input type="text" id="teamNameInput" oninput="updateTeamName(this.value)" placeholder="مثال: فريق الفرسان / المجموعة 1" class="w-full sm:w-72 bg-white/10 border border-white/20 text-white placeholder-gray-400 text-xs rounded-xl px-3 py-2 font-bold focus:ring-2 focus:ring-amber-400 focus:outline-none transition">
+        </div>
+      </div>
+
+      <!-- TIMER CONTROL PANEL -->
+      <div class="flex flex-col items-center bg-white/5 p-4 rounded-xl border border-white/10 min-w-[260px]">
+        <div class="text-xs text-gray-300 mb-1 flex items-center gap-2 font-semibold">
+          <i class="fa-regular fa-clock"></i> المؤقت الزمني للعمل الجماعي
+        </div>
+        <div id="timerDisplay" class="text-4xl font-black font-mono bg-navy px-6 py-2 rounded-lg border border-cblue text-amber-400 my-2 tracking-wider shadow-inner">
+          15:00
+        </div>
+        <div class="flex gap-2 w-full mt-1">
+          <button id="startTimerBtn" onclick="toggleTimer()" class="flex-1 bg-agreen hover:bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1">
+            <i class="fa-solid fa-play" id="timerIcon"></i> <span id="timerBtnText">ابدأ العمل</span>
+          </button>
+          <button onclick="resetTimer()" class="bg-white/10 hover:bg-white/20 text-white font-semibold py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1" title="إعادة ضبط المؤقت">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- INSTRUCTIONS & OVERVIEW CARD -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+      <div class="flex items-center gap-3 mb-4 text-navy">
+        <div class="bg-cblue/10 p-2.5 rounded-xl text-cblue">
+          <i class="fa-solid fa-circle-info text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold">دليل النشاط والتعليمات</h2>
+          <p class="text-xs text-gray-500">يرجى قراءة الإرشادات التالية قبل البدء في حل ورقة العمل</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        <div class="bg-lightbg p-4 rounded-xl border-r-4 border-cblue space-y-1">
+          <span class="font-bold text-navy flex items-center gap-2">
+            <i class="fa-solid fa-users text-cblue"></i> تقسيم المجموعات
+          </span>
+          <p class="text-gray-600 text-xs">يتم تقسيم المشاركين إلى مجموعات عمل صغيرة مكونة من <strong>4-5 أشخاص</strong>.</p>
+        </div>
+
+        <div class="bg-lightbg p-4 rounded-xl border-r-4 border-iorange space-y-1">
+          <span class="font-bold text-navy flex items-center gap-2">
+            <i class="fa-solid fa-hourglass-half text-iorange"></i> المدى الزمني
+          </span>
+          <p class="text-gray-600 text-xs"><strong>30 دقيقة إجمالية:</strong> (15 دقيقة تحليل جماعي + 15 دقيقة عرض ومناقشة).</p>
+        </div>
+
+        <div class="bg-lightbg p-4 rounded-xl border-r-4 border-agreen space-y-1">
+          <span class="font-bold text-navy flex items-center gap-2">
+            <i class="fa-solid fa-file-signature text-agreen"></i> المخرجات المطلوبة
+          </span>
+          <p class="text-gray-600 text-xs">استكمال ورقة العمل الجماعية التفاعلية وعرض النتائج أمام المدرب والزملاء.</p>
+        </div>
+
+        <div class="bg-lightbg p-4 rounded-xl border-r-4 border-ared space-y-1">
+          <span class="font-bold text-navy flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-ared"></i> معايير التقييم السريع
+          </span>
+          <p class="text-gray-600 text-xs">1. دقة تصنيف التهديد · 2. صحة ربط ركن CIA · 3. منطقية الإجراء الأولي.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1: SCENARIOS & THREAT CLASSIFICATION -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-extrabold text-navy flex items-center gap-2">
+          <span class="bg-navy text-white text-xs px-2.5 py-1 rounded-lg">المرحلة 1</span>
+          تحليل البطاقات وتحديد نوع التهديد
+        </h2>
+        <span class="text-xs text-gray-500">حدد نوع التهديد لكل سيناريو من القائمة المنسدلة</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="scenariosGrid">
+        <!-- Dynamic Cards rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- STEP 2: DRAG & DROP CIA TRIAD MATCHING -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-navy flex items-center gap-2">
+            <span class="bg-navy text-white text-xs px-2.5 py-1 rounded-lg">المرحلة 2</span>
+            مرحلة الربط: اسحب الحالات إلى ركن CIA المستهدف
+          </h2>
+          <p class="text-xs text-gray-500 mt-1">قم بسحب البطاقات من المجمع المتاح وأسقطها في المكان المناسب.</p>
+        </div>
+        <div id="mappingStatus" class="text-xs font-bold text-ared bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 self-start md:self-auto">
+          <i class="fa-solid fa-circle-exclamation"></i> يرجى ربط كافة الحالات (4/0)
+        </div>
+      </div>
+
+      <!-- Unplaced Pool -->
+      <div class="space-y-2">
+        <label class="text-xs font-bold text-gray-600 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-cblue"></i> الحالات المتاحة للربط:
+        </label>
+        <div id="scenarioPool" class="min-h-[64px] p-3 bg-lightbg rounded-xl border-2 border-dashed border-gray-300 flex flex-wrap gap-3 items-center">
+          <!-- Pool items rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Drop Zones -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Confidentiality Zone -->
+        <div class="zone bg-blue-50/50 border-2 border-dashed border-cblue rounded-xl p-4 flex flex-col justify-between min-h-[160px]" data-zone="C">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-extrabold text-cblue text-base flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> 🔵 السرية (Confidentiality)
+              </h3>
+            </div>
+            <p class="text-xs text-gray-600 mb-3">حماية البيانات والمنع من الوصول غير المصرح به.</p>
+          </div>
+          <div class="dropped-items flex flex-col gap-2 border-t border-cblue/20 pt-3 min-h-[60px]">
+            <!-- Dropped items go here -->
+          </div>
+        </div>
+
+        <!-- Integrity Zone -->
+        <div class="zone bg-amber-50/50 border-2 border-dashed border-iorange rounded-xl p-4 flex flex-col justify-between min-h-[160px]" data-zone="I">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-extrabold text-iorange text-base flex items-center gap-2">
+                <i class="fa-solid fa-user-shield"></i> 🟠 السلامة (Integrity)
+              </h3>
+            </div>
+            <p class="text-xs text-gray-600 mb-3">ضمان صحة وحماية البيانات من التعديل أو العبث.</p>
+          </div>
+          <div class="dropped-items flex flex-col gap-2 border-t border-iorange/20 pt-3 min-h-[60px]">
+            <!-- Dropped items go here -->
+          </div>
+        </div>
+
+        <!-- Availability Zone -->
+        <div class="zone bg-emerald-50/50 border-2 border-dashed border-agreen rounded-xl p-4 flex flex-col justify-between min-h-[160px]" data-zone="A">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="font-extrabold text-agreen text-base flex items-center gap-2">
+                <i class="fa-solid fa-server"></i> 🟢 التوافر (Availability)
+              </h3>
+            </div>
+            <p class="text-xs text-gray-600 mb-3">إتاحة الخدمات والبيانات للمستفيدين عند الحاجة إليها.</p>
+          </div>
+          <div class="dropped-items flex flex-col gap-2 border-t border-agreen/20 pt-3 min-h-[60px]">
+            <!-- Dropped items go here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: LIVE WORKSHEET TABLE -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4" id="printableWorksheet">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+        <div>
+          <h2 class="text-xl font-extrabold text-navy flex items-center gap-2">
+            <span class="bg-navy text-white text-xs px-2.5 py-1 rounded-lg">المرحلة 3</span>
+            ورقة العمل الجماعية المتزامنة
+          </h2>
+          <!-- Display Team Name in Table Header -->
+          <p class="text-xs font-bold text-cblue mt-1 flex items-center gap-1">
+            <i class="fa-solid fa-users"></i> إجابات: <span id="displayTeamName" class="text-navy font-extrabold underline decoration-amber-400">المجموعة لم تُحدّد بعد</span>
+          </p>
+        </div>
+        <button onclick="window.print()" class="text-xs font-bold text-navy bg-lightbg hover:bg-gray-200 px-3 py-2 rounded-xl border border-gray-300 transition flex items-center gap-1.5 self-start sm:self-auto">
+          <i class="fa-solid fa-print text-cblue"></i> طباعة / تصدير ورقة العمل
+        </button>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="w-full text-right text-sm">
+          <thead class="bg-navy text-white text-xs font-bold uppercase">
+            <tr>
+              <th class="p-3.5 text-center w-16">الحالة</th>
+              <th class="p-3.5 w-1/4">نوع التهديد</th>
+              <th class="p-3.5 w-1/4">الركن المستهدف (CIA)</th>
+              <th class="p-3.5">الإجراء الأولي المقترح من المجموعة</th>
+            </tr>
+          </thead>
+          <tbody id="worksheetBody" class="divide-y divide-gray-200 bg-white">
+            <!-- Worksheet rows rendered dynamically via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3">
+        <button id="resetAllBtn" onclick="resetAll()" class="text-xs font-semibold text-gray-500 hover:text-ared transition flex items-center gap-1">
+          <i class="fa-solid fa-trash-can"></i> إعادة تصفير كافة البيانات
+        </button>
+
+        <button id="evaluateBtn" onclick="evaluateAndShowAnswers()" disabled class="w-full sm:w-auto bg-navy hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold px-6 py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-square-check text-amber-400"></i>
+          <span>👁 عرض إجابات المدرب والتقييم السريع</span>
+        </button>
+      </div>
+    <!-- EVALUATION & TRAINER PANEL LOGIC -->
+    <section id="trainerPanel" class="hidden bg-white rounded-2xl p-6 shadow-xl border-2 border-cblue space-y-6">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-amber-100 text-amber-700 p-2.5 rounded-xl">
+            <i class="fa-solid fa-award text-2xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black text-navy">لوحة تقييم المدرب المرجعية</h2>
+            <p class="text-xs font-bold text-cblue mt-0.5">
+              نتائج التقييم الخاصة بـ: <span id="trainerTeamNameDisplay" class="text-navy font-extrabold underline decoration-amber-400">المجموعة لم تُحدّد بعد</span>
+            </p>
+          </div>
+        </div>
+        <button onclick="document.getElementById('trainerPanel').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Summary Score Cards -->
+      <div id="scoreCardsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Verification Table -->
+      <div class="space-y-2">
+        <h3 class="text-base font-bold text-navy flex items-center gap-2">
+          <i class="fa-solid fa-table-list text-cblue"></i> تفاصيل التقييم المقارن:
+        </h3>
+        <div class="overflow-x-auto rounded-xl border border-gray-200">
+          <table class="w-full text-right text-xs">
+            <thead class="bg-gray-100 text-navy font-bold">
+              <tr>
+                <th class="p-3 text-center">الحالة</th>
+                <th class="p-3">التصنيف الصحيح</th>
+                <th class="p-3">الركن الصحيح</th>
+                <th class="p-3">الإجراء المرجعي الموصى به</th>
+              </tr>
+            </thead>
+            <tbody id="evaluationTableBody" class="divide-y divide-gray-200">
+              <!-- Evaluation Rows Rendered JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Dynamic Detailed Feedback Notes -->
+      <div class="bg-amber-50 border-r-4 border-iorange p-4 rounded-xl text-xs space-y-2 text-gray-800 leading-relaxed">
+        <h4 class="font-bold text-sm text-amber-900 flex items-center gap-2">
+          <i class="fa-solid fa-lightbulb text-iorange"></i> ملاحظات التصحيح والمناقشة للمدرب:
+        </h4>
+        <ul class="list-disc list-inside space-y-1 text-gray-700">
+          <li><strong>الحالة (أ):</strong> تصيد إلكتروني بريدي يستهدف <strong>السرية (C)</strong> لسرقة بيانات الاعتماد. يجب عدم النقر مطلقاً والتحقق عبر وسيلة موثوقة.</li>
+          <li><strong>الحالة (ب):</strong> هجوم فدية يضرب <strong>التوافر (A)</strong> بشكل أساسي بتشفير الملفات، وقد يمس السرية إذا اقترن بازدواجية الابتزاز (Double Extortion).</li>
+          <li><strong>الحالة (ج):</strong> هندسة اجتماعية صوتية (Vishing) تستهدف <strong>السرية (C)</strong>. الوعي البشري هو خط الدفاع الأول لمنع مشاركة كلمات السر phone-to-phone.</li>
+          <li><strong>الحالة (د):</strong> هجوم (DDoS) يستهدف <strong>التوافر (A)</strong> عبر تعطيل الوصول دون سرقة أو تعديل البيانات.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-navy text-white text-xs font-bold px-5 py-3 rounded-xl shadow-2xl z-50 hidden flex items-center gap-2 border border-cblue">
+    <i class="fa-solid fa-bell text-amber-400"></i> <span id="toastMsg">إشعار</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // DATA CONFIGURATION
+    const scenariosData = [
+      {
+        id: 'A',
+        code: 'الحالة أ',
+        text: 'وصل موظف بريد إلكتروني يبدو صادراً من إدارة تقنية المعلومات، يطلب "تحديث كلمة المرور فوراً" عبر رابط مرفق، ويهدد بتعطيل حسابك عند التأخير.',
+        correctType: 'تصيد احتيالي (Phishing)',
+        correctCia: 'C',
+        refAction: 'عدم النقر على الرابط، والتحقق من المرسل عبر قناة رسمية، والإبلاغ لفريق أمن المعلومات، وتغيير كلمة المرور من الحساب الرسمي فقط.',
+        themeColor: 'border-cblue',
+        badgeBg: 'bg-blue-100 text-cblue'
+      },
+      {
+        id: 'B',
+        code: 'الحالة ب',
+        text: 'ظهرت على شاشة الجهاز رسالة "ملفاتك مشفّرة، ادفع مبلغاً بالعملة الرقمية لاستعادتها"، وأصبحت كافة الملفات الهامة غير قابلة للفتح.',
+        correctType: 'برمجية فدية (Ransomware)',
+        correctCia: 'A',
+        refAction: 'عزل الجهاز فوراً عن الشبكة (فصل السلك والواي فاي)، عدم دفع الفدية، الإبلاغ الفوري، والتحقق من النسخ الاحتياطية لاستعادتها.',
+        themeColor: 'border-agreen',
+        badgeBg: 'bg-emerald-100 text-agreen'
+      },
+      {
+        id: 'C',
+        code: 'الحالة ج',
+        text: 'اتصل شخص يعرّف نفسه بأنه مدير تقنية المعلومات، ويطلب كلمة مرور الحساب الشخصي للموظف بحجة إجراء صيانة طارئة وسريعة للسيرفر.',
+        correctType: 'هندسة اجتماعية / تصيد صوتي (Vishing)',
+        correctCia: 'C',
+        refAction: 'عدم مشاركة كلمة المرور إطلاقاً تحت أي ظرف، إنهاء المكالمة، والتحقق من هوية المتصل عبر هاتف القسم المعتمد ورسائل الإبلاغ.',
+        themeColor: 'border-cblue',
+        badgeBg: 'bg-blue-100 text-cblue'
+      },
+      {
+        id: 'D',
+        code: 'الحالة د',
+        text: 'توقف الموقع الإلكتروني للشركة عن العمل بشكل كامل بسبب استقبال آلاف الطلبات الوهمية في وقت واحد ومن مصادر متعددة.',
+        correctType: 'هجوم حجب الخدمة الموزع (DDoS)',
+        correctCia: 'A',
+        refAction: 'تفعيل أنظمة التخفيف (DDoS Mitigation)، تحويل حركة المرور عبر شبكات توزيع المحتوى (CDN)، وتتبع مصادر الهجوم بالتعاون مع المزود.',
+        themeColor: 'border-agreen',
+        badgeBg: 'bg-emerald-100 text-agreen'
+      }
+    ];
+
+    const typeOptions = [
+      'تصيد احتيالي (Phishing)',
+      'برمجية فدية (Ransomware)',
+      'هندسة اجتماعية / تصيد صوتي (Vishing)',
+      'هجوم حجب الخدمة الموزع (DDoS)',
+      'اختراق بيانات (Data Breach)',
+      'برمجية خبيثة (Malware)'
+    ];
+
+    const ciaNames = {
+      C: 'السرية (Confidentiality)',
+      I: 'السلامة (Integrity)',
+      A: 'التوافر (Availability)'
+    };
+
+    // APP STATE
+    let state = {
+      teamName: '',  // Team Name
+      placed: {},    // { 'A': 'C', 'B': 'A', ... }
+      types: {},     // { 'A': 'Phishing...', ... }
+      actions: {},   // { 'A': 'Action text...', ... }
+      timeLeft: 900, // 15 mins in seconds
+      timerId: null,
+      isTimerRunning: false
+    };
+
+    // UPDATE TEAM NAME
+    function updateTeamName(val) {
+      state.teamName = val.trim();
+      const nameToShow = state.teamName || 'المجموعة لم تُحدّد بعد';
+      document.getElementById('displayTeamName').textContent = nameToShow;
+      document.getElementById('trainerTeamNameDisplay').textContent = nameToShow;
+    }
+
+    // INIT APP
+    window.addEventListener('DOMContentLoaded', () => {
+      renderScenarios();
+      renderPoolAndZones();
+      renderWorksheet();
+      setupDragAndDrop();
+    });
+
+    // 1. RENDER SCENARIOS CARDS
+    function renderScenarios() {
+      const grid = document.getElementById('scenariosGrid');
+      grid.innerHTML = scenariosData.map(s => `
+        <div class="bg-white rounded-2xl p-5 shadow-sm border-t-4 ${s.themeColor} border-x border-b border-gray-200 card-hover flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-black px-3 py-1 rounded-md ${s.badgeBg}">${s.code}</span>
+              <span class="text-xs font-semibold text-gray-400">سيناريو حالة #${s.id}</span>
+            </div>
+            <p class="text-xs md:text-sm text-gray-700 font-semibold leading-relaxed bg-lightbg p-3.5 rounded-xl border border-gray-100">${s.text}</p>
+          </div>
+
+          <div class="space-y-1.5 pt-2 border-t border-gray-100">
+            <label class="text-xs font-bold text-navy flex items-center gap-1">
+              <i class="fa-solid fa-list-check text-cblue"></i> حدد نوع التهديد المناسب:
+            </label>
+            <select onchange="updateType('${s.id}', this.value)" class="w-full bg-lightbg border border-gray-300 text-navy text-xs rounded-xl p-2.5 font-semibold focus:ring-2 focus:ring-cblue focus:outline-none">
+              <option value="">-- اختر تصنيف التهديد --</option>
+              ${typeOptions.map(opt => `<option value="${opt}" ${state.types[s.id] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 2. RENDER DRAG & DROP POOL AND ZONES
+    function renderPoolAndZones() {
+      const pool = document.getElementById('scenarioPool');
+      const unplaced = scenariosData.filter(s => !state.placed[s.id]);
+
+      if (unplaced.length === 0) {
+        pool.innerHTML = `<span class="text-xs text-agreen font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> تم ربط جميع الحالات المتاحة بنجاح!</span>`;
+      } else {
+        pool.innerHTML = unplaced.map(s => `
+          <div class="chip bg-navy text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow cursor-grab active:cursor-grabbing flex items-center gap-2 border border-cblue hover:bg-slate-800"
+               draggable="true" data-id="${s.id}">
+            <i class="fa-solid fa-grip-vertical text-gray-400"></i>
+            <span>${s.code}</span>
+          </div>
+        `).join('');
+      }
+
+      // Render Dropped items in zones
+      document.querySelectorAll('.zone').forEach(zone => {
+        const zoneType = zone.dataset.zone;
+        const container = zone.querySelector('.dropped-items');
+        const itemsInZone = Object.entries(state.placed).filter(([, z]) => z === zoneType);
+
+        container.innerHTML = itemsInZone.map(([id]) => {
+          const s = scenariosData.find(x => x.id === id);
+          return `
+            <div class="bg-white border border-gray-200 text-navy p-2 rounded-lg text-xs font-bold shadow-sm flex items-center justify-between group">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-dot text-cblue"></i> ${s.code}
+              </span>
+              <button onclick="unplaceScenario('${id}')" class="text-gray-400 hover:text-ared transition p-1" title="إزالة من الركن">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          `;
+        }).join('');
+      });
+
+      // Update mapping badge status
+      const count = Object.keys(state.placed).length;
+      const statusEl = document.getElementById('mappingStatus');
+      if (count === scenariosData.length) {
+        statusEl.className = 'text-xs font-bold text-agreen bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5';
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> اكتمل ربط الأركان (${count}/${scenariosData.length})`;
+      } else {
+        statusEl.className = 'text-xs font-bold text-ared bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5';
+        statusEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> يرجى ربط كافة الحالات (${count}/${scenariosData.length})`;
+      }
+
+      checkCompletionState();
+    }
+
+    // DRAG AND DROP EVENT LISTENERS
+    function setupDragAndDrop() {
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('chip')) {
+          e.dataTransfer.setData('text/plain', e.target.dataset.id);
+          e.target.classList.add('opacity-50');
+        }
+      });
+
+      document.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('chip')) {
+          e.target.classList.remove('opacity-50');
+        }
+      });
+
+      const zones = document.querySelectorAll('.zone');
+      zones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('over');
+        });
+
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('over');
+        });
+
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('over');
+          const id = e.dataTransfer.getData('text/plain');
+          if (id) {
+            state.placed[id] = zone.dataset.zone;
+            renderPoolAndZones();
+            renderWorksheet();
+          }
+        });
+      });
+    }
+
+    function unplaceScenario(id) {
+      delete state.placed[id];
+      renderPoolAndZones();
+      renderWorksheet();
+    }
+
+    // 3. RENDER LIVE WORKSHEET
+    function renderWorksheet() {
+      const tbody = document.getElementById('worksheetBody');
+      tbody.innerHTML = scenariosData.map(s => {
+        const typeSelected = state.types[s.id] || '';
+        const ciaSelected = state.placed[s.id] || '';
+        const actionText = state.actions[s.id] || '';
+
+        return `
+          <tr class="hover:bg-gray-50/80 transition">
+            <td class="p-3.5 text-center font-extrabold text-navy bg-lightbg/50 border-l border-gray-100">${s.code}</td>
+            <td class="p-3.5 font-bold text-gray-700">
+              ${typeSelected ? `<span class="bg-blue-50 text-cblue px-2.5 py-1 rounded-md text-xs border border-blue-100">${typeSelected}</span>` : `<em class="text-gray-400 text-xs font-normal">لم يحدد نوع التهديد بعد</em>`}
+            </td>
+            <td class="p-3.5 font-bold text-gray-700">
+              ${ciaSelected ? `<span class="bg-amber-50 text-amber-800 px-2.5 py-1 rounded-md text-xs border border-amber-200">${ciaNames[ciaSelected]}</span>` : `<em class="text-gray-400 text-xs font-normal">لم يربط بركن CIA</em>`}
+            </td>
+            <td class="p-3.5">
+              <input type="text"
+                placeholder="اكتب الإجراء الأولي الموصى به هنا..."
+                value="${actionText}"
+                oninput="updateAction('${s.id}', this.value)"
+                class="w-full text-xs p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cblue focus:outline-none transition">
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      checkCompletionState();
+    }
+
+    function updateType(id, val) {
+      state.types[id] = val;
+      renderWorksheet();
+    }
+
+    function updateAction(id, val) {
+      state.actions[id] = val;
+      checkCompletionState();
+    }
+
+    // CHECK IF ALL INPUTS ARE COMPLETE TO ENABLE EVALUATION BUTTON
+    function checkCompletionState() {
+      const allPlaced = Object.keys(state.placed).length === scenariosData.length;
+      const allTyped = scenariosData.every(s => !!state.types[s.id]);
+      const btn = document.getElementById('evaluateBtn');
+
+      if (allPlaced && allTyped) {
+        btn.disabled = false;
+        btn.classList.add('animate-bounce');
+        setTimeout(() => btn.classList.remove('animate-bounce'), 1000);
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    // 4. EVALUATION & TRAINER PANEL LOGIC
+    function evaluateAndShowAnswers() {
+      let typeScore = 0;
+      let ciaScore = 0;
+      let actionScore = 0;
+
+      const evalRows = scenariosData.map(s => {
+        const isTypeCorrect = state.types[s.id] === s.correctType;
+        const isCiaCorrect = state.placed[s.id] === s.correctCia;
+        const userAction = (state.actions[s.id] || '').trim();
+        const isActionLogical = userAction.length >= 8;
+
+        if (isTypeCorrect) typeScore++;
+        if (isCiaCorrect) ciaScore++;
+        if (isActionLogical) actionScore++;
+
+        return `
+          <tr class="border-b border-gray-100">
+            <td class="p-3 text-center font-bold text-navy bg-lightbg">${s.code}</td>
+            <td class="p-3">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid ${isTypeCorrect ? 'fa-circle-check text-agreen' : 'fa-circle-xmark text-ared'}"></i>
+                <span class="${isTypeCorrect ? 'font-bold text-agreen' : 'text-gray-700'}">${s.correctType}</span>
+              </div>
+            </td>
+            <td class="p-3">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid ${isCiaCorrect ? 'fa-circle-check text-agreen' : 'fa-circle-xmark text-ared'}"></i>
+                <span class="${isCiaCorrect ? 'font-bold text-agreen' : 'text-gray-700'}">${ciaNames[s.correctCia]}</span>
+              </div>
+            </td>
+            <td class="p-3 text-gray-600 leading-relaxed">${s.refAction}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('evaluationTableBody').innerHTML = evalRows;
+
+      // Render Summary Score Cards
+      document.getElementById('scoreCardsContainer').innerHTML = `
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <div class="text-xs text-blue-700 font-bold mb-1">دقة تصنيف التهديد</div>
+          <div class="text-3xl font-black text-cblue">${typeScore} / 4</div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+          <div class="text-xs text-amber-700 font-bold mb-1">صحة ربط ركن CIA</div>
+          <div class="text-3xl font-black text-iorange">${ciaScore} / 4</div>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+          <div class="text-xs text-emerald-700 font-bold mb-1">منطقية الإجراء الأولي</div>
+          <div class="text-3xl font-black text-agreen">${actionScore} / 4</div>
+        </div>
+      `;
+
+      const panel = document.getElementById('trainerPanel');
+      panel.classList.remove('hidden');
+      panel.scrollIntoView({ behavior: 'smooth' });
+      showToast('تمت مقارنة وتوليد تقييم الإجابات بنجاح');
+    }
+
+    // TIMER CONTROLS
+    function toggleTimer() {
+      const btnText = document.getElementById('timerBtnText');
+      const icon = document.getElementById('timerIcon');
+
+      if (state.isTimerRunning) {
+        clearInterval(state.timerId);
+        state.isTimerRunning = false;
+        btnText.textContent = 'استئناف';
+        icon.className = 'fa-solid fa-play';
+      } else {
+        if (state.timeLeft <= 0) state.timeLeft = 900;
+        state.timerId = setInterval(updateTimer, 1000);
+        state.isTimerRunning = true;
+        btnText.textContent = 'إيقاف مؤقت';
+        icon.className = 'fa-solid fa-pause';
+      }
+    }
+
+    function updateTimer() {
+      if (state.timeLeft <= 0) {
+        clearInterval(state.timerId);
+        state.isTimerRunning = false;
+        document.getElementById('timerBtnText').textContent = 'ابدأ العمل';
+        document.getElementById('timerIcon').className = 'fa-solid fa-play';
+        showToast('⏰ انتهى الوقت المخصص للعمل الجماعي (15 دقيقة)!');
+        return;
+      }
+      state.timeLeft--;
+      const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
+      const s = (state.timeLeft % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+    }
+
+    function resetTimer() {
+      clearInterval(state.timerId);
+      state.isTimerRunning = false;
+      state.timeLeft = 900;
+      document.getElementById('timerDisplay').textContent = '15:00';
+      document.getElementById('timerBtnText').textContent = 'ابدأ العمل';
+      document.getElementById('timerIcon').className = 'fa-solid fa-play';
+      showToast('تم إعادة ضبط المؤقت الزمني');
+    }
+
+    function resetAll() {
+      state.placed = {};
+      state.types = {};
+      state.actions = {};
+      state.teamName = '';
+      document.getElementById('teamNameInput').value = '';
+      updateTeamName('');
+      document.getElementById('trainerPanel').classList.add('hidden');
+      renderScenarios();
+      renderPoolAndZones();
+      renderWorksheet();
+      showToast('تم إعادة تصفير كافة المدخلات');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+  </script>
+</body>
+</html>
